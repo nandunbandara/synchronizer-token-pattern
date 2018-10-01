@@ -68,9 +68,33 @@ app.post('/login', (req, res) => {
 
 app.post('/post', (req, res) => {
     
-    
+    let session_id = req.cookies['session-id'];
+
+    if(session_id && SESSION_DATA[session_id] && (SESSION_DATA[session_id] === req.body.csrf_token)){
+        res.status(200).json({success:true});
+    } else {
+        res.status(400).json({ success:false });
+    }
 
 });
+
+// get token 
+app.get('/token', (req, res) => {
+
+    let session_id = req.cookies['session-id'];
+
+    console.log('cookies: ', req.cookies);
+
+    if(session_id && SESSION_DATA[session_id]){
+
+        res.status(200).json({ success:true, token: SESSION_DATA[session_id]});
+
+    } else {
+
+        res.status(400).json({ success:false, message: 'Token unavailable'});
+
+    }
+})
 
 app.listen(PORT, err => {
     if(err){

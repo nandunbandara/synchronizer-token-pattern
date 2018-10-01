@@ -70,10 +70,19 @@ app.post('/post', (req, res) => {
     
     let session_id = req.cookies['session-id'];
 
-    if(session_id && SESSION_DATA[session_id] && (SESSION_DATA[session_id] === req.body.csrf_token)){
-        res.status(200).json({success:true});
+    // check if the token in the request is same as that is stored in the server
+    if(session_id && SESSION_DATA[session_id]){
+
+        if(SESSION_DATA[session_id] === req.body.csrf_token){
+            res.status(200).json({success:true});
+        } else {
+            res.status(400).json({ success:false });
+
+        }
     } else {
-        res.status(400).json({ success:false });
+
+        res.sendFile('public/login.html', { root: __dirname });
+
     }
 
 });
@@ -95,6 +104,19 @@ app.get('/token', (req, res) => {
 
     }
 })
+
+// logout user from the application
+app.post('/logout', (req, res) => {
+
+    let session_id = req.cookies['session-id'];
+    delete SESSION_DATA[session_id]; // remove csrf token from memory
+
+    req.clearCookie('session-id');
+    req.clearCookie('time');
+
+    res.sendFile('public/login.html', { root: __dirname });
+
+});
 
 app.listen(PORT, err => {
     if(err){
